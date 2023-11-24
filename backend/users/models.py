@@ -1,24 +1,25 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+
 class CustomUser(AbstractUser):
     '''
     Кастомная модель пользователя.
     '''
     email = models.EmailField(
-        'email',
         max_length=254,
+        verbose_name='email',
         unique=True,
     )
 
     first_name = models.CharField(
-        'Имя',
         max_length=150,
+        verbose_name='Имя',
     )
 
     last_name = models.CharField(
-        'Фамилия',
         max_length=150,
+        verbose_name='Фамилия',
     )
 
     USERNAME_FIELD = 'email'
@@ -33,19 +34,19 @@ class CustomUser(AbstractUser):
         return self.username
 
 
-
 class Subscribe(models.Model):
+    '''Модель подписки.'''
     user = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
         related_name='subscriber',
-        verbose_name='Подписчик'
+        verbose_name='Пользователь - подписчик'
     )
     author = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
         related_name='subscribing',
-        verbose_name='Подписан'
+        verbose_name='Автор на которого подписывается пользователь'
     )
 
     def __str__(self):
