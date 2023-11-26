@@ -1,4 +1,28 @@
 from django.contrib import admin
-from users.models import CustomUser
+from django.contrib.auth.admin import UserAdmin
 
-admin.site.register(CustomUser)
+from users.models import CustomUser, Subscribe
+
+
+# admin.site.register(CustomUser)
+@admin.register(CustomUser)
+class UserAdmin(admin.ModelAdmin):
+    
+    def save_model(self, request, obj, form, change):
+        obj.set_password(obj.password)
+        obj.save()
+
+    list_display = (
+        'username', 'pk', 'email', 'password', 'first_name', 'last_name',
+    )
+    list_filter = ('username', 'email')
+    search_fields = ('username', 'email')
+    empty_value_display = '-пусто-'
+
+
+
+@admin.register(Subscribe)
+class SubscribeAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'user', 'author')
+    list_editable = ('user', 'author')
+    empty_value_display = '-'

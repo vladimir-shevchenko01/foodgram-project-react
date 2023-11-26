@@ -1,0 +1,56 @@
+[
+    {
+        "model": "components.tag",
+        "pk": 1,
+        "fields": {
+            "name": "завтрак",
+            "color": "#ede533",
+            "slug": "breakfast"
+        }
+    },
+    {
+        "model": "components.tag",
+        "pk": 2,
+        "fields": {
+            "name": "обед",
+            "color": "#9bed33",
+            "slug": "lunch"
+        }
+    },
+    {
+        "model": "components.tag",
+        "pk": 3,
+        "fields": {
+            "name": "ужин",
+            "color": "#fbc829",
+            "slug": "dinner"
+        }
+    },
+    {
+        "model": "components.tag",
+        "pk": 4,
+        "fields": {
+            "name": "Перекус",
+            "color": "#29fbb2",
+            "slug": "fast_food"
+        }
+    },
+    {
+        "model": "components.tag",
+        "pk": 5,
+        "fields": {
+            "name": "Напитки",
+            "color": "#29cefb",
+            "slug": "drinks"
+        }
+    }
+    {
+        "model": "components.tag",
+        "pk": 6,
+        "fields": {
+            "name": "Десерт",
+            "color": "#b229fb",
+            "slug": "dessert"
+        }
+    }
+]

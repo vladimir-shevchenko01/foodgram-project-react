@@ -1,8 +1,8 @@
 from django.core.validators import MinValueValidator
 from django.db import models
-from users.models import CustomUser
 
 from components.models import Ingredient, Tag
+from users.models import CustomUser
 
 
 class Recipe(models.Model):
@@ -43,7 +43,7 @@ class Recipe(models.Model):
         auto_now_add=True,
         verbose_name='Дата публикации',
     )
-    
+
     class Meta:
         ordering = ['-pub_date']
         verbose_name = 'Рецепт'

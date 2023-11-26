@@ -103,7 +103,6 @@ USE_L10N = True
 
 USE_TZ = True
 
-# Кастомный пользователь.
 AUTH_USER_MODEL = 'users.CustomUser'
 
 STATIC_URL = '/static/'

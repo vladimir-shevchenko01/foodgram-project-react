@@ -1,8 +1,9 @@
 from django.test import TestCase
-from .views import UserViewSet
-from .models import CustomUser, Subscribe
-from rest_framework.test import APIRequestFactory, force_authenticate
 from mixer.backend.django import mixer
+from rest_framework.test import APIRequestFactory, force_authenticate
+
+from .models import CustomUser, Subscribe
+from .views import UserViewSet
 
 
 class TestUserViewSet(TestCase):

@@ -1,12 +1,11 @@
-from django.db import models
 from django.core.validators import RegexValidator
+from django.db import models
 
 
 class Ingredient(models.Model):
     name = models.CharField(
         max_length=200,
         verbose_name="Наименование ингредиента",
-        unique=True,
     )
     measurement_unit = models.CharField(
         max_length=20,
@@ -17,6 +16,7 @@ class Ingredient(models.Model):
         ordering = ["name"]
         verbose_name = "Ингредиент"
         verbose_name_plural = "Ингредиенты"
+        unique_together = [['name', 'measurement_unit']]
 
     def __str__(self):
         return self.name
