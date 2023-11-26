@@ -75,7 +75,6 @@ class UserViewSet(viewsets.ModelViewSet):
             permission_classes=[IsAuthenticated])
     def subscriptions(self, request):
         user = request.user
-        print(f'Пользователь: {user}')
         queryset = Subscribe.objects.filter(user=user).order_by('id')
         # Добавляем пагинатор
         paginator = PageNumberPagination()
