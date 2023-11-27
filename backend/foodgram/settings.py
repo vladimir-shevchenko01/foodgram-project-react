@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from decouple import Csv, config
@@ -22,6 +23,7 @@ INSTALLED_APPS = [
     'components.apps.ComponentsConfig',
     'recipes.apps.RecipesConfig',
     'rest_framework',
+    'django_filters',
     'rest_framework.authtoken',
     'djoser',
 ]
@@ -106,5 +108,9 @@ USE_TZ = True
 AUTH_USER_MODEL = 'users.CustomUser'
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

@@ -12,7 +12,7 @@ class Recipe(models.Model):
         related_name='recipes',
         verbose_name='Автор рецепта',
     )
-    recipe_name = models.CharField(
+    name = models.CharField(
         max_length=200,
         verbose_name='Название блюда',
     )
