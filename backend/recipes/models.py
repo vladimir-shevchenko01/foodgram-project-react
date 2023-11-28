@@ -60,6 +60,7 @@ class RecipeIngredient(models.Model):
     )
     ingredient = models.ForeignKey(
         Ingredient,
+        related_name='recipe_ingredient',
         on_delete=models.CASCADE,
     )
     amount = models.IntegerField(
@@ -74,3 +75,26 @@ class RecipeIngredient(models.Model):
         return f'Для приготовления {self.recipe} нужно: ' \
                f'{self.ingredient} {self.amount} ' \
                f'{self.ingredient.measurement_unit}'
+
+
+class FavoriteRecipe(models.Model):
+    user = models.ForeignKey(
+        CustomUser,
+        on_delete=models.CASCADE,
+        related_name='favorited_by_users',
+        verbose_name='Пользователь',
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='favorites',
+        verbose_name='Избранный рецепт',
+    )
+
+    class Meta:
+        verbose_name = 'Избранный рецепт'
+        verbose_name_plural = 'Избранные рецепты'
+        unique_together = ['user', 'recipe']
+
+    def __str__(self):
+        return f'{self.user} добавил в избранное  {self.recipe}'

@@ -6,27 +6,24 @@ from rest_framework.permissions import (AllowAny, IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 
-from recipes.models import Recipe, RecipeIngredient
-from recipes.serializers import RecipeIngredientSerializer, RecipeSerializer
+from recipes.models import Recipe, RecipeIngredient, FavoriteRecipe
+from recipes.serializers import RecipeIngredientSerializer, RecipeSerializer, FavoriteRecipeSerializer
 from users.models import CustomUser
+from users.serializers import UserSerializer
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
 
-    def get_serializer_class(self):
-        if self.action == 'list' or self.action == 'retrieve':
-            return RecipeSerializer
-        elif self.action == 'create' or self.action == 'update' or self.action == 'partial_update':
-            return RecipeSerializer
-        return RecipeSerializer
-
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        print(f'______{self.request.user}____________')
+        user = self.request.user
+        serializer.save(author=user)
 
     def perform_update(self, serializer):
-        serializer.save()
+        print(f'______{self.request.user}____________')
+        serializer.save(author=self.request.user)
 
     def perform_destroy(self, instance):
         instance.delete()
@@ -37,3 +34,6 @@ class RecipeIngredientViewSet(viewsets.ModelViewSet):
     serializer_class = RecipeIngredientSerializer
 
 
+class AddToFavoriteRecipe(viewsets.ModelViewSet):
+    queryset = FavoriteRecipe.objects.all()
+    serializer_class = FavoriteRecipeSerializer

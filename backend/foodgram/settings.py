@@ -95,7 +95,7 @@ REST_FRAMEWORK = {
     'SEARCH_PARAM': 'name',
 }
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru-RU'
 
 TIME_ZONE = 'UTC'
 
