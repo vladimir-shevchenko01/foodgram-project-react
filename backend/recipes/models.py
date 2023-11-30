@@ -6,6 +6,8 @@ from users.models import CustomUser
 
 
 class Recipe(models.Model):
+    '''_______________________'''
+
     author = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
@@ -17,7 +19,7 @@ class Recipe(models.Model):
         verbose_name='Название блюда',
     )
     image = models.ImageField(
-        verbose_name='Фото готового блюда',
+        verbose_name='Фото готовоreго блюда',
         upload_to='recipe_image',
     )
     text = models.TextField(
@@ -39,13 +41,9 @@ class Recipe(models.Model):
         blank=True,
         verbose_name='Тэги',
     )
-    pub_date = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='Дата публикации',
-    )
 
     class Meta:
-        ordering = ['-pub_date']
+        ordering = ['-id']
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
 
@@ -54,6 +52,8 @@ class Recipe(models.Model):
 
 
 class RecipeIngredient(models.Model):
+    '''_______________________'''
+
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
@@ -78,10 +78,12 @@ class RecipeIngredient(models.Model):
 
 
 class FavoriteRecipe(models.Model):
+    '''_______________________'''
+
     user = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
-        related_name='favorited_by_users',
+        related_name='favorited_by_user',
         verbose_name='Пользователь',
     )
     recipe = models.ForeignKey(
@@ -98,3 +100,28 @@ class FavoriteRecipe(models.Model):
 
     def __str__(self):
         return f'{self.user} добавил в избранное  {self.recipe}'
+
+
+# class ShoppingCart(models.Model):
+#     '''_____________'''
+
+#     user = models.ForeignKey(
+#         CustomUser,
+#         on_delete=models.CASCADE,
+#         related_name='users_cart',
+#         verbose_name='Пользователь',
+#     )
+#     recipe = models.ForeignKey(
+#         Recipe,
+#         on_delete=models.CASCADE,
+#         related_name='recipe_in_cart',
+#         verbose_name='Избранный рецепт',
+#     )
+
+#     class Meta:
+#         verbose_name = 'Корзина с покупоками'
+#         verbose_name_plural = 'Корзина с покупоками'
+#         unique_together = ['user', 'recipe']
+
+#     def __str__(self):
+#         return f'Рецепт {self.recipe} в списке покупок'

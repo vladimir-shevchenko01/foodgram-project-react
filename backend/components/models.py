@@ -3,6 +3,8 @@ from django.db import models
 
 
 class Ingredient(models.Model):
+    '''_____________'''
+
     name = models.CharField(
         max_length=200,
         verbose_name="Наименование ингредиента",
@@ -23,6 +25,8 @@ class Ingredient(models.Model):
 
 
 class Tag(models.Model):
+    '''_____________'''
+
     name = models.CharField(
         verbose_name="Наименование тэга",
         max_length=200,

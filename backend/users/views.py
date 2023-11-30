@@ -76,10 +76,9 @@ class UserViewSet(viewsets.ModelViewSet):
     def subscriptions(self, request):
         user = request.user
         queryset = Subscribe.objects.filter(user=user).order_by('id')
-        # Добавляем пагинатор
+
         paginator = PageNumberPagination()
         result_page = paginator.paginate_queryset(queryset, request)
 
         subscribe_serializer = SubscriptionSerializer(result_page, many=True)
-
         return paginator.get_paginated_response(subscribe_serializer.data)
