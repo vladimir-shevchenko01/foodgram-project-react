@@ -2,16 +2,21 @@ from django.test import TestCase
 from mixer.backend.django import mixer
 from rest_framework.test import APIRequestFactory, force_authenticate
 
-from .models import CustomUser, Subscribe
+from .models import CustomUser, SubscribeModel
 from .views import UserViewSet
 
 
 class TestUserViewSet(TestCase):
+    '''Тестируем модель позователя.'''
+
     def setUp(self):
+        '''Создаем тестовый экземпляр пользователя.'''
+
         self.factory = APIRequestFactory()
         self.user = mixer.blend(CustomUser)
 
     def test_me(self):
+        '''Тест запроса о себе.'''
         request = self.factory.get('api/me/')
         force_authenticate(request, user=self.user)
         view = UserViewSet.as_view({'get': 'me'})
@@ -28,7 +33,7 @@ class TestUserViewSet(TestCase):
 
     def test_unsubscribe(self):
         author = mixer.blend(CustomUser)
-        Subscribe.objects.create(user=self.user, author=author)
+        SubscribeModel.objects.create(user=self.user, author=author)
         request = self.factory.delete(f'api/users/{author.id}/subscribe/')
         force_authenticate(request, user=self.user)
         view = UserViewSet.as_view({'delete': 'subscribe'})

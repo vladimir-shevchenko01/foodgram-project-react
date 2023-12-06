@@ -1,17 +1,24 @@
+from django.utils.html import format_html
 from django.contrib import admin
 
-from components.models import Ingredient, Tag
+from components.models import IngredientModel, TagModel
 
 
-@admin.register(Ingredient)
+@admin.register(IngredientModel)
 class IngredientAdmin(admin.ModelAdmin):
     list_display = ('pk', 'name', 'measurement_unit')
     list_filter = ('name', )
     search_fields = ('name', )
 
 
-@admin.register(Tag)
+@admin.register(TagModel)
 class TagAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'name', 'color', 'slug')
-    list_editable = ('name', 'color', 'slug')
-    empty_value_display = '-'
+    list_display = ('name', 'slug', 'get_color_of_tag')
+
+    @admin.display(description='Цвет тега')
+    def get_color_of_tag(self, obj):
+        return format_html(
+            '<span style="color: {};">{}</span>',
+            obj.color,
+            obj.color
+        )

@@ -91,7 +91,7 @@ REST_FRAMEWORK = {
 
     'DEFAULT_PAGINATION_CLASS':
         'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 3,
+    'PAGE_SIZE': 6,
     'SEARCH_PARAM': 'name',
 }
 
@@ -114,3 +114,8 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+NAME_MAX_LENGTH = 200
+SLUG_MAX_LENGTH = 200
+MEASUREMENT_UNIT_MAX_LENGTH = 20
+FILE_NAME = 'shopping_cart'

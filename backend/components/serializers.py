@@ -1,17 +1,29 @@
 from rest_framework import serializers
 
-from components.models import Ingredient, Tag
+from components.models import IngredientModel, TagModel
+from recipes.models import RecipeIngredientModel
 
 
 class IngredientSerializer(serializers.ModelSerializer):
+    '''Сериализатор ингредиента.'''
 
     class Meta:
-        model = Ingredient
+        model = IngredientModel
         fields = '__all__'
 
 
-class TagSerializer(serializers.ModelSerializer):
+class AddIngredientsSerializer(serializers.ModelSerializer):
+    '''_________________________'''
+    id = serializers.IntegerField()
 
     class Meta:
-        model = Tag
+        model = RecipeIngredientModel
+        fields = ('id', 'amount')
+
+
+class TagSerializer(serializers.ModelSerializer):
+    '''Сериализатор тэга.'''
+
+    class Meta:
+        model = TagModel
         fields = '__all__'

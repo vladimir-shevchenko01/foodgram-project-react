@@ -1,6 +1,6 @@
 from django_filters import CharFilter, FilterSet
 
-from components.models import Ingredient
+from components.models import IngredientModel
 
 
 class IngredientFilterSet(FilterSet):
@@ -11,7 +11,7 @@ class IngredientFilterSet(FilterSet):
             return 'name'
     
     class Meta:
-        model = Ingredient
+        model = IngredientModel
         fields = {
             'name': ['istartswith']
         }

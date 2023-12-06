@@ -34,7 +34,7 @@ class CustomUser(AbstractUser):
         return self.username
 
 
-class Subscribe(models.Model):
+class SubscribeModel(models.Model):
     '''Модель подписки.'''
     user = models.ForeignKey(
         CustomUser,

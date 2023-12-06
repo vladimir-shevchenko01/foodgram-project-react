@@ -1,16 +1,20 @@
 from django.core.validators import RegexValidator
 from django.db import models
 
+from foodgram.settings import (
+    MEASUREMENT_UNIT_MAX_LENGTH, NAME_MAX_LENGTH, SLUG_MAX_LENGTH
+)
 
-class Ingredient(models.Model):
-    '''_____________'''
+
+class IngredientModel(models.Model):
+    '''Модель ингредиента.'''
 
     name = models.CharField(
-        max_length=200,
+        max_length=NAME_MAX_LENGTH,
         verbose_name="Наименование ингредиента",
     )
     measurement_unit = models.CharField(
-        max_length=20,
+        max_length=MEASUREMENT_UNIT_MAX_LENGTH,
         verbose_name="Единица измерения",
     )
 
@@ -18,18 +22,18 @@ class Ingredient(models.Model):
         ordering = ["name"]
         verbose_name = "Ингредиент"
         verbose_name_plural = "Ингредиенты"
-        unique_together = [['name', 'measurement_unit']]
+        unique_together = ['name', 'measurement_unit']
 
     def __str__(self):
-        return self.name
+        return f'{self.name}, {self.measurement_unit}.'
 
 
-class Tag(models.Model):
-    '''_____________'''
+class TagModel(models.Model):
+    '''Модель тэга.'''
 
     name = models.CharField(
         verbose_name="Наименование тэга",
-        max_length=200,
+        max_length=NAME_MAX_LENGTH,
     )
     color = models.CharField(
         max_length=7,
@@ -44,7 +48,7 @@ class Tag(models.Model):
         ],
     )
     slug = models.SlugField(
-        max_length=200,
+        max_length=SLUG_MAX_LENGTH,
         verbose_name="Слаг",
         unique=True,
         null=True,

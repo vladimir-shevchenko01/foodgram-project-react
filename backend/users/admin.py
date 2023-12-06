@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from users.models import CustomUser, Subscribe
+from users.models import CustomUser, SubscribeModel
 
 
 # admin.site.register(CustomUser)
@@ -21,7 +21,7 @@ class UserAdmin(admin.ModelAdmin):
 
 
 
-@admin.register(Subscribe)
+@admin.register(SubscribeModel)
 class SubscribeAdmin(admin.ModelAdmin):
     list_display = ('pk', 'user', 'author')
     list_editable = ('user', 'author')

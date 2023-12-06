@@ -1,0 +1,6 @@
+Список покупок:
+__________________________________________________________
+
+{% for ingredient, amount, measurement_unit in ingredients_summary.items %}
+{{ ingredient }} - {{ amount }} {{ measurement_unit }}
+{% endfor %}

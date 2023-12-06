@@ -1,27 +1,23 @@
 from django.contrib import admin
 
-from recipes.models import Recipe, RecipeIngredient
-
-
-class RecipeTagInline(admin.TabularInline):
-    model = Recipe.tags.through
+from recipes.models import RecipeIngredientModel, RecipeModel
 
 
 class RecipeIngredientAdmin(admin.StackedInline):
-    model = RecipeIngredient
+    model = RecipeIngredientModel
     autocomplete_fields = ('ingredient',)
 
 
-class RecipeIngredientsInline(admin.TabularInline):
-    model = Recipe.ingredients.through
+# class RecipeIngredientsInline(admin.TabularInline):
+#     model = RecipeModel.ingredients.through
 
 
-@admin.register(Recipe)
+@admin.register(RecipeModel)
 class RecipeAdmin(admin.ModelAdmin):
-    inlines = [RecipeTagInline, RecipeIngredientAdmin]
-    list_display = ('pk', 'name', 'author')
+    inlines = [RecipeIngredientAdmin]
+    list_display = ('pk', 'name', 'text', 'author')
     list_editable = (
-        'name', 'author'
+        'name', 'text', 'author'
     )
     list_filter = ('name', 'author', 'tags')
     empty_value_display = '-пусто-'
@@ -29,7 +25,7 @@ class RecipeAdmin(admin.ModelAdmin):
 
 
 
-@admin.register(RecipeIngredient)
+@admin.register(RecipeIngredientModel)
 class RecipeIngredientAdmin(admin.ModelAdmin):
     list_display = (
         'pk', 'recipe', 'ingredient', 'amount'

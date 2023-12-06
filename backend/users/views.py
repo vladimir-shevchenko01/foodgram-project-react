@@ -5,16 +5,27 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from users.models import CustomUser, Subscribe
-from users.pagination import CustomSubscribeListPagination
-from users.serializers import (SubscribeSerializer, SubscriptionSerializer,
-                               UserSerializer)
+from foodgram.pagination import CustomPagination
+from users.models import CustomUser, SubscribeModel
+from users.serializers import (
+    SubscribeSerializer,
+    SubscriptionsSerializer,
+    UserSerializer,
+    UserCreateSerializer,
+    SetNewPasswordSerializer,
+)
 
 
 class UserViewSet(viewsets.ModelViewSet):
+    '''_______________________________'''
 
     queryset = CustomUser.objects.all()
-    serializer_class = UserSerializer
+    pagination_class = CustomPagination
+
+    def get_serializer_class(self):
+        if self.action in ('list', 'retrieve'):
+            return UserSerializer
+        return UserCreateSerializer
 
     @action(detail=False,
             methods=['get'],
@@ -24,9 +35,20 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(serializer.data,
                         status=status.HTTP_200_OK)
 
+    @action(detail=False, methods=['post'],
+            permission_classes=(IsAuthenticated,))
+    def set_password(self, request):
+        serializer = SetNewPasswordSerializer(request.user, data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+        return Response(
+            {'detail': 'Вы успешно сменили пароль.'},
+            status=status.HTTP_204_NO_CONTENT
+        )
+
+
     @action(detail=True,
             methods=['post', 'delete'],
-            url_path='subscribe',
             permission_classes=[IsAuthenticated])
     def subscribe(self, request, pk=None):
         user = request.user
@@ -35,7 +57,7 @@ class UserViewSet(viewsets.ModelViewSet):
         if request.method == 'POST':
             # Проверяем, существует ли уже подписка от пользователя на автора.
             # Если подписка не существует, создаем новую запись.
-            if Subscribe.objects.filter(user=user, author=author).exists():
+            if SubscribeModel.objects.filter(user=user, author=author).exists():
                 return Response(
                     {"message": "Вы уже подписаны на этого автора"},
                     status=status.HTTP_200_OK,
@@ -62,7 +84,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
         if request.method == 'DELETE':
             subscription = get_object_or_404(
-                Subscribe,
+                SubscribeModel,
                 user=user,
                 author=author
             )
@@ -75,10 +97,10 @@ class UserViewSet(viewsets.ModelViewSet):
             permission_classes=[IsAuthenticated])
     def subscriptions(self, request):
         user = request.user
-        queryset = Subscribe.objects.filter(user=user).order_by('id')
+        queryset = SubscribeModel.objects.filter(user=user).order_by('id')
 
         paginator = PageNumberPagination()
         result_page = paginator.paginate_queryset(queryset, request)
 
-        subscribe_serializer = SubscriptionSerializer(result_page, many=True)
+        subscribe_serializer = SubscriptionsSerializer(result_page, many=True)
         return paginator.get_paginated_response(subscribe_serializer.data)
