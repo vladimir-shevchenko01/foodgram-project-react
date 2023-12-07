@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -23,6 +24,7 @@ from recipes.serializers import (
     ShowRecipeInCartSerializer,
     RecipeShortDataSerializer,
 )
+from recipes.filters import RecipeFilter
 from rest_framework.permissions import IsAuthenticated
 
 
@@ -30,27 +32,17 @@ class RecipeViewSet(viewsets.ModelViewSet):
     '''Отображение рецептов.'''
 
     queryset = RecipeModel.objects.all()
-    # serializer_class = RecipeFullDataSerializer
     permission_classes = [IsAuthorOrReadOnly]
     pagination_class = CustomPagination
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = RecipeFilter
 
     def get_serializer_class(self):
         if self.action in ['create', 'partial_update']:
-            print(f'______________заходим чрез изменение с коротким сериализатором__________')
             return RecipeShortDataSerializer
         else:
+            # RecipeModel.objects.all().delete()
             return RecipeFullDataSerializer
-
-    def perform_create(self, serializer):
-        user = self.request.user
-        serializer.save(author=user)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    # def perform_update(self, serializer):
-    #     print(f'______________сохраняем сериализатор__________')
-    #     print(f'______________{serializer}__________!!@!!')
-    #     serializer.save(author=self.request.user)
-    #     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def perform_destroy(self, instance):
         instance.delete()

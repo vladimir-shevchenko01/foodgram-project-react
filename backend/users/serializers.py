@@ -6,7 +6,6 @@ from users.models import CustomUser, SubscribeModel
 from recipes.models import RecipeModel
 import recipes.serializers as Recipe_Serializers
 
-
 class UserSerializer(serializers.ModelSerializer):
     '''____________________________________'''
 
@@ -123,7 +122,7 @@ class SubscriptionsSerializer(serializers.ModelSerializer):
     def get_recipes(self, obj):
         author = obj.author
         recipe_queryset = RecipeModel.objects.filter(author=author)
-        recipe_serializer = Recipe_Serializers.RecipeShortDataSerializer(
+        recipe_serializer = Recipe_Serializers.ShowFavoriteRecipeSerializer(
             recipe_queryset, many=True
         )
         return recipe_serializer.data

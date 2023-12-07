@@ -46,7 +46,6 @@ class UserViewSet(viewsets.ModelViewSet):
             status=status.HTTP_204_NO_CONTENT
         )
 
-
     @action(detail=True,
             methods=['post', 'delete'],
             permission_classes=[IsAuthenticated])
