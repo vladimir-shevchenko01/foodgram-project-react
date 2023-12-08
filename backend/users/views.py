@@ -1,7 +1,6 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -9,7 +8,6 @@ from foodgram.pagination import CustomPagination
 from users.models import CustomUser, SubscribeModel
 from users.serializers import (
     SubscribeSerializer,
-    SubscriptionsSerializer,
     UserSerializer,
     UserCreateSerializer,
     SetNewPasswordSerializer,
@@ -59,20 +57,23 @@ class UserViewSet(viewsets.ModelViewSet):
             if SubscribeModel.objects.filter(user=user, author=author).exists():
                 return Response(
                     {"message": "Вы уже подписаны на этого автора"},
-                    status=status.HTTP_200_OK,
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
-            # Сохраняем сериализатор с обновленными данными.
-            serializer = SubscribeSerializer(
-                data={'user': user.id, 'author': author.id}
-            )
-            if serializer.is_valid():
-                serializer.save()
-                author_serializer = UserSerializer(
-                    author,
-                    context={'request': request},
-                )
+            if user == author:
                 return Response(
-                    author_serializer.data,
+                    {'errors': 'Нельзя подписать на самого себя.'},
+                    status=status.HTTP_400_BAD_REQUEST)
+            # Сохраняем сериализатор с обновленными данными и контекстом.
+            serializer = SubscribeSerializer(
+                data={'user': user.id, 'author': author.id},
+                context={'request': request}
+            )
+
+            if serializer.is_valid():
+                serializer.save(user=user, author=author)
+
+                return Response(
+                    serializer.data,
                     status=status.HTTP_201_CREATED
                 )
             else:
@@ -82,6 +83,14 @@ class UserViewSet(viewsets.ModelViewSet):
                 )
 
         if request.method == 'DELETE':
+            if not SubscribeModel.objects.filter(
+                user=user,
+                author=author
+            ).exists():
+                return Response(
+                    {'errors': 'Такой подписки у вас не было.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             subscription = get_object_or_404(
                 SubscribeModel,
                 user=user,
@@ -93,13 +102,16 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(detail=False,
             methods=['get'],
             url_path='subscriptions',
-            permission_classes=[IsAuthenticated])
+            permission_classes=[IsAuthenticated],
+            pagination_class=CustomPagination)
     def subscriptions(self, request):
         user = request.user
         queryset = SubscribeModel.objects.filter(user=user).order_by('id')
+        page = self.paginate_queryset(queryset)
 
-        paginator = PageNumberPagination()
-        result_page = paginator.paginate_queryset(queryset, request)
-
-        subscribe_serializer = SubscriptionsSerializer(result_page, many=True)
-        return paginator.get_paginated_response(subscribe_serializer.data)
+        # Передаем объект запроса в контексте,
+        # чтобы при необходимости получить лимит
+        subscribe_serializer = SubscribeSerializer(
+            page, many=True, context={'request': request}
+        )
+        return self.get_paginated_response(subscribe_serializer.data)

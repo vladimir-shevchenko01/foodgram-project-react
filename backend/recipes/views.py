@@ -41,7 +41,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if self.action in ['create', 'partial_update']:
             return RecipeShortDataSerializer
         else:
-            # RecipeModel.objects.all().delete()
             return RecipeFullDataSerializer
 
     def perform_destroy(self, instance):
@@ -53,15 +52,23 @@ class RecipeViewSet(viewsets.ModelViewSet):
             permission_classes=[IsAuthenticated])
     def favorite(self, request, pk=None):
         user = request.user
-        recipe = get_object_or_404(RecipeModel, id=pk)
 
         if request.method == 'POST':
+            # Если такого рецепта нет, возвращаем ошибку.
+            if not RecipeModel.objects.filter(pk=pk).exists():
+                return Response(
+                        {'details': 'Такого рецепта не нет в базе данных.'},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
             # Если пользователь не авторизован, возвращаем ошибку.
             if not request.user.is_authenticated:
                 return Response(
                     {'details': 'Вы не авторизованы.'},
                     status=status.HTTP_401_UNAUTHORIZED,
                 )
+
+            recipe = get_object_or_404(RecipeModel, pk=pk)
+
             # Проверяем находится ли данный рецепт в избранном.
             # Если рецепта нет, создаем новую запись.
             if FavoriteRecipeModel.objects.filter(
@@ -93,6 +100,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 )
 
         if request.method == 'DELETE':
+            recipe = get_object_or_404(RecipeModel, pk=pk)
+            if not FavoriteRecipeModel.objects.filter(
+                user=user,
+                recipe=recipe
+            ).exists():
+                return Response(
+                    {'errors': 'Такой рецепта у вас не было.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             # Ищем рецепт в избранном и удаляем его.
             favorite_recipes = get_object_or_404(
                 FavoriteRecipeModel,
@@ -112,9 +128,16 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def shopping_cart(self, request, pk=None):
         user = request.user
-        recipe = get_object_or_404(RecipeModel, id=pk)
 
         if request.method == 'POST':
+
+            # Если такого рецепта нет, возвращаем ошибку.
+            if not RecipeModel.objects.filter(pk=pk).exists():
+                return Response(
+                        {'details': 'Такого рецепта не нет в базе данных.'},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
             # Если пользователь не авторизован, возвращаем ошибку.
             if not request.user.is_authenticated:
                 return Response(
@@ -122,8 +145,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_401_UNAUTHORIZED,
                 )
 
+            recipe = get_object_or_404(RecipeModel, pk=pk)
+
             # Проверяем, находится ли рецепт уже в корзине пользователя
-            elif ShoppingCartModel.objects.filter(
+            if ShoppingCartModel.objects.filter(
                 user=user, recipe=recipe
             ).exists():
                 return Response(
@@ -150,6 +175,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 )
 
         if request.method == 'DELETE':
+            recipe = get_object_or_404(RecipeModel, pk=pk)
             # Если пользователь не авторизован, возвращаем ошибку.
             if not request.user.is_authenticated:
                 return Response(

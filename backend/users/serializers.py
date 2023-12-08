@@ -6,6 +6,7 @@ from users.models import CustomUser, SubscribeModel
 from recipes.models import RecipeModel
 import recipes.serializers as Recipe_Serializers
 
+
 class UserSerializer(serializers.ModelSerializer):
     '''____________________________________'''
 
@@ -85,12 +86,6 @@ class SetNewPasswordSerializer(serializers.Serializer):
 
 
 class SubscribeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = SubscribeModel
-        fields = '__all__'
-
-
-class SubscriptionsSerializer(serializers.ModelSerializer):
     email = serializers.SerializerMethodField()
     id = serializers.SerializerMethodField()
     username = serializers.SerializerMethodField()
@@ -121,7 +116,11 @@ class SubscriptionsSerializer(serializers.ModelSerializer):
 
     def get_recipes(self, obj):
         author = obj.author
+        request = self.context.get('request')
         recipe_queryset = RecipeModel.objects.filter(author=author)
+        if request and request.GET.get('recipes_limit'):
+            limit = request.GET.get('recipes_limit')
+            recipe_queryset = recipe_queryset[:int(limit)]
         recipe_serializer = Recipe_Serializers.ShowFavoriteRecipeSerializer(
             recipe_queryset, many=True
         )
