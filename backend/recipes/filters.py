@@ -1,13 +1,14 @@
-from django_filters.rest_framework import (
-    BooleanFilter, ModelMultipleChoiceFilter,
-    FilterSet, ModelChoiceFilter,
-)
-from recipes.models import RecipeModel
+from django_filters.rest_framework import (BooleanFilter, FilterSet,
+                                           ModelChoiceFilter,
+                                           ModelMultipleChoiceFilter)
+
 from components.models import TagModel
+from recipes.models import RecipeModel
 from users.models import CustomUser
 
 
 class RecipeFilter(FilterSet):
+    '''Правила фильтрации.'''
     is_favorited = BooleanFilter(
         field_name='favorite_recipes',
         method='filter_is_favorited',

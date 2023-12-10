@@ -1,9 +1,8 @@
 from django.core.validators import RegexValidator
 from django.db import models
 
-from foodgram.settings import (
-    MEASUREMENT_UNIT_MAX_LENGTH, NAME_MAX_LENGTH, SLUG_MAX_LENGTH
-)
+from foodgram.settings import (MEASUREMENT_UNIT_MAX_LENGTH, NAME_MAX_LENGTH,
+                               SLUG_MAX_LENGTH)
 
 
 class IngredientModel(models.Model):

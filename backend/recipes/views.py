@@ -1,5 +1,5 @@
-from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -7,25 +7,18 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from foodgram.pagination import CustomPagination
-from foodgram.settings import FILE_NAME
 from foodgram.permissions import IsAuthorOrReadOnly
-from recipes.models import (
-    FavoriteRecipeModel,
-    RecipeIngredientModel,
-    RecipeModel,
-    ShoppingCartModel,
-)
-from recipes.serializers import (
-    FavoriteRecipeSerializer,
-    RecipeIngredientSerializer,
-    RecipeFullDataSerializer,
-    ShowFavoriteRecipeSerializer,
-    ShoppingCartSerializer,
-    ShowRecipeInCartSerializer,
-    RecipeShortDataSerializer,
-)
+from foodgram.settings import FILE_NAME
 from recipes.filters import RecipeFilter
-from rest_framework.permissions import IsAuthenticated
+from recipes.models import (FavoriteRecipeModel, RecipeIngredientModel,
+                            RecipeModel, ShoppingCartModel)
+from recipes.serializers import (FavoriteRecipeSerializer,
+                                 RecipeFullDataSerializer,
+                                 RecipeIngredientSerializer,
+                                 RecipeShortDataSerializer,
+                                 ShoppingCartSerializer,
+                                 ShowFavoriteRecipeSerializer,
+                                 ShowRecipeInCartSerializer)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -59,7 +52,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 return Response(
                         {'details': 'Такого рецепта не нет в базе данных.'},
                         status=status.HTTP_400_BAD_REQUEST,
-                    )
+                )
             # Если пользователь не авторизован, возвращаем ошибку.
             if not request.user.is_authenticated:
                 return Response(
@@ -136,7 +129,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 return Response(
                         {'details': 'Такого рецепта не нет в базе данных.'},
                         status=status.HTTP_400_BAD_REQUEST,
-                    )
+                )
 
             # Если пользователь не авторизован, возвращаем ошибку.
             if not request.user.is_authenticated:
@@ -209,6 +202,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def download_shopping_cart(self, request):
         '''Реализация эндпоинта download_shopping_list.'''
+
         user = request.user
         shopping_list = ShoppingCartModel.objects.filter(user=user)
 
@@ -242,8 +236,3 @@ class RecipeViewSet(viewsets.ModelViewSet):
         # Записываем собраные данные в ответ.
         response.writelines(shopping_list_content)
         return response
-
-
-class RecipeIngredientViewSet(viewsets.ModelViewSet):
-    queryset = RecipeIngredientModel.objects.all()
-    serializer_class = RecipeIngredientSerializer

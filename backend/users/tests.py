@@ -17,6 +17,7 @@ class TestUserViewSet(TestCase):
 
     def test_me(self):
         '''Тест запроса о себе.'''
+
         request = self.factory.get('api/me/')
         force_authenticate(request, user=self.user)
         view = UserViewSet.as_view({'get': 'me'})
@@ -24,6 +25,8 @@ class TestUserViewSet(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_subscribe(self):
+        '''Тест подписки.'''
+
         author = mixer.blend(CustomUser)
         request = self.factory.post(f'api/users/{author.id}/subscribe/')
         force_authenticate(request, user=self.user)
@@ -32,6 +35,8 @@ class TestUserViewSet(TestCase):
         self.assertEqual(response.status_code, 201)
 
     def test_unsubscribe(self):
+        '''Тест отписки.'''
+
         author = mixer.blend(CustomUser)
         SubscribeModel.objects.create(user=self.user, author=author)
         request = self.factory.delete(f'api/users/{author.id}/subscribe/')
@@ -41,6 +46,8 @@ class TestUserViewSet(TestCase):
         self.assertEqual(response.status_code, 204)
 
     def test_subscriptions(self):
+        '''Проверка вывод страницы с подписками.'''
+
         request = self.factory.get('api/subscribe/')
         force_authenticate(request, user=self.user)
         view = UserViewSet.as_view({'get': 'subscriptions'})

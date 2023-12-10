@@ -1,15 +1,11 @@
-from drf_extra_fields.fields import Base64ImageField
 from django.shortcuts import get_object_or_404
+from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 
-from users.serializers import UserSerializer
-from components.serializers import AddIngredientsSerializer, TagSerializer
 from components.models import IngredientModel
-from recipes.models import (
-    FavoriteRecipeModel,
-    RecipeIngredientModel,
-    RecipeModel, ShoppingCartModel
-)
+from components.serializers import AddIngredientsSerializer, TagSerializer
+from recipes.models import (FavoriteRecipeModel, RecipeIngredientModel,
+                            RecipeModel, ShoppingCartModel)
 from users.serializers import UserSerializer
 
 
@@ -50,11 +46,11 @@ class RecipeFullDataSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RecipeModel
-        fields = [
+        fields = (
             'id', 'tags', 'author', 'ingredients',
             'is_favorited', 'is_in_shopping_cart',
             'name', 'image', 'text', 'cooking_time'
-        ]
+        )
 
 
 class RecipeIngredientSerializer(serializers.ModelSerializer):
@@ -180,7 +176,7 @@ class RecipeShortDataSerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
-    
+
     def to_representation(self, instance):
         return RecipeFullDataSerializer(
             instance,

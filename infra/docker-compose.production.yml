@@ -1,0 +1,39 @@
+version: '3'
+
+volumes:
+  static_foodg:
+  media_foodg:
+  pg_data_foodg:
+
+services:
+
+  db:
+    image: postgres:13
+    env_file: ../.env
+    volumes:
+      - pg_data_foodg:/var/lib/postgresql/data
+
+  backend:
+    image: prstud/foodgram_backend:latest
+    restart: always
+    volumes:
+      - static_foodg:/backend_static
+      - media_foodg:/media
+    env_file:
+      - ../.env
+
+  frontend:
+    env_file: ../.env
+    image: prstud/foodgram_frontend:latest
+    command: cp -r /app/build/. /static/
+    volumes:
+      - static_foodg:/static
+
+  nginx:
+    image: prstud/foodgram_gateway:latest
+    env_file: ../.env
+    ports:
+      - "8000:80"
+    volumes:
+      - static_foodg:/static/
+      - media_foodg:/media/

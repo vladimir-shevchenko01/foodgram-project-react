@@ -6,12 +6,8 @@ from rest_framework.response import Response
 
 from foodgram.pagination import CustomPagination
 from users.models import CustomUser, SubscribeModel
-from users.serializers import (
-    SubscribeSerializer,
-    UserSerializer,
-    UserCreateSerializer,
-    SetNewPasswordSerializer,
-)
+from users.serializers import (SetNewPasswordSerializer, SubscribeSerializer,
+                               UserCreateSerializer, UserSerializer)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -54,7 +50,9 @@ class UserViewSet(viewsets.ModelViewSet):
         if request.method == 'POST':
             # Проверяем, существует ли уже подписка от пользователя на автора.
             # Если подписка не существует, создаем новую запись.
-            if SubscribeModel.objects.filter(user=user, author=author).exists():
+            if SubscribeModel.objects.filter(
+                user=user, author=author
+            ).exists():
                 return Response(
                     {"message": "Вы уже подписаны на этого автора"},
                     status=status.HTTP_400_BAD_REQUEST,

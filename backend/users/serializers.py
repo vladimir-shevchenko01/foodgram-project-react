@@ -1,14 +1,14 @@
+import django.contrib.auth.password_validation as validators
 from django.core import exceptions
 from rest_framework import serializers
-import django.contrib.auth.password_validation as validators
 
-from users.models import CustomUser, SubscribeModel
-from recipes.models import RecipeModel
 import recipes.serializers as Recipe_Serializers
+from recipes.models import RecipeModel
+from users.models import CustomUser, SubscribeModel
 
 
 class UserSerializer(serializers.ModelSerializer):
-    '''____________________________________'''
+    '''Пользовательский сериали'''
 
     is_subscribed = serializers.SerializerMethodField()
 
@@ -29,7 +29,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
-    '''___________________________'''
+    '''Сериализатор для создания пользователя.'''
 
     password = serializers.CharField(write_only=True)
 

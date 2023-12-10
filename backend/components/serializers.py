@@ -1,7 +1,6 @@
 from rest_framework import serializers
 
 from components.models import IngredientModel, TagModel
-from recipes.models import RecipeIngredientModel
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -13,7 +12,7 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 
 class AddIngredientsSerializer(serializers.ModelSerializer):
-    '''_________________________'''
+    '''Сериализатор для добавленя ингредиента.'''
     id = serializers.IntegerField()
     amount = serializers.IntegerField()
 

@@ -84,8 +84,7 @@ class RecipeIngredientModel(models.Model):
 
 class FavoriteRecipeModel(models.Model):
     '''Модель для рецептов в избранном.'''
-    
-    # id = models.AutoField(primary_key=True)
+
     user = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
@@ -111,7 +110,6 @@ class FavoriteRecipeModel(models.Model):
 class ShoppingCartModel(models.Model):
     '''Модель корзины.'''
 
-    # id = models.AutoField(primary_key=True)
     user = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,

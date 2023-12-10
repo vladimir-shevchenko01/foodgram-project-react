@@ -8,10 +8,6 @@ class RecipeIngredientAdmin(admin.StackedInline):
     autocomplete_fields = ('ingredient',)
 
 
-# class RecipeIngredientsInline(admin.TabularInline):
-#     model = RecipeModel.ingredients.through
-
-
 @admin.register(RecipeModel)
 class RecipeAdmin(admin.ModelAdmin):
     inlines = [RecipeIngredientAdmin]
@@ -21,8 +17,6 @@ class RecipeAdmin(admin.ModelAdmin):
     )
     list_filter = ('name', 'author', 'tags')
     empty_value_display = '-пусто-'
-
-
 
 
 @admin.register(RecipeIngredientModel)

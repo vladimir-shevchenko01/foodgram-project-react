@@ -4,10 +4,9 @@ from django.contrib.auth.admin import UserAdmin
 from users.models import CustomUser, SubscribeModel
 
 
-# admin.site.register(CustomUser)
 @admin.register(CustomUser)
 class UserAdmin(admin.ModelAdmin):
-    
+
     def save_model(self, request, obj, form, change):
         obj.set_password(obj.password)
         obj.save()
@@ -18,7 +17,6 @@ class UserAdmin(admin.ModelAdmin):
     list_filter = ('username', 'email')
     search_fields = ('username', 'email')
     empty_value_display = '-пусто-'
-
 
 
 @admin.register(SubscribeModel)
