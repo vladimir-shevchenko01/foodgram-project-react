@@ -14,7 +14,6 @@ from recipes.models import (FavoriteRecipeModel, RecipeIngredientModel,
                             RecipeModel, ShoppingCartModel)
 from recipes.serializers import (FavoriteRecipeSerializer,
                                  RecipeFullDataSerializer,
-                                 RecipeIngredientSerializer,
                                  RecipeShortDataSerializer,
                                  ShoppingCartSerializer,
                                  ShowFavoriteRecipeSerializer,
