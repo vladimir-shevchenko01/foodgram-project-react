@@ -35,5 +35,5 @@ services:
     ports:
       - "8000:80"
     volumes:
-      - static_foodg:/static/
-      - media_foodg:/media/
+      - static_foodg:/static
+      - media_foodg:/media
