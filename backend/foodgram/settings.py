@@ -75,8 +75,8 @@ if DB_PROD:
     STATIC_ROOT = BASE_DIR / 'collected_static'
 
     MEDIA_URL = '/media/'
-    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-else:
+    MEDIA_ROOT = '/media'
+else:   
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
