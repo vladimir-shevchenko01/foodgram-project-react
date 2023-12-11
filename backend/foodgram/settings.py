@@ -1,4 +1,4 @@
-import os
+# import os
 from pathlib import Path
 
 from decouple import Csv, config
@@ -67,9 +67,9 @@ DATABASES = {
             'PASSWORD': config('POSTGRES_PASSWORD'),
             'HOST': config('DB_HOST'),
             'PORT': config('DB_PORT')
-
         }
-    }
+}
+
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'collected_static'
 
