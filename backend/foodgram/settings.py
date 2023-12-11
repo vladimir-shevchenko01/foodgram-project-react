@@ -76,7 +76,7 @@ if DB_PROD:
 
     MEDIA_URL = '/media/'
     MEDIA_ROOT = '/media'
-else:   
+else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',

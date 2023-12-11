@@ -9,7 +9,7 @@ echo "База данных подключена"
 
 # Продолжаем с остальными командами
 echo "_____________Выполняем миграции_________________"
-python manage.py makemigrations
+python manage.py makemigrations users recipes components
 python manage.py migrate
 echo "_____________Собираем статику_________________"
 python manage.py collectstatic --noinput
