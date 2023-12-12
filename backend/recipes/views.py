@@ -49,8 +49,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
             # Если такого рецепта нет, возвращаем ошибку.
             if not RecipeModel.objects.filter(pk=pk).exists():
                 return Response(
-                        {'details': 'Такого рецепта не нет в базе данных.'},
-                        status=status.HTTP_400_BAD_REQUEST,
+                    {'details': 'Такого рецепта не нет в базе данных.'},
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
             # Если пользователь не авторизован, возвращаем ошибку.
             if not request.user.is_authenticated:
@@ -126,8 +126,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
             # Если такого рецепта нет, возвращаем ошибку.
             if not RecipeModel.objects.filter(pk=pk).exists():
                 return Response(
-                        {'details': 'Такого рецепта не нет в базе данных.'},
-                        status=status.HTTP_400_BAD_REQUEST,
+                    {'details': 'Такого рецепта не нет в базе данных.'},
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
 
             # Если пользователь не авторизован, возвращаем ошибку.
