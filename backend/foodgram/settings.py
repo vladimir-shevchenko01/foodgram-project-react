@@ -70,6 +70,21 @@ DATABASES = {
     }
 }
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+# BASE_DIR = Path(__file__).resolve().parent.parent
+
+# STATIC_URL = '/static/'
+
+# STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
+
+# MEDIA_URL = '/media/'
+# MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'collected_static'
 
@@ -120,7 +135,10 @@ AUTH_USER_MODEL = 'users.CustomUser'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-NAME_MAX_LENGTH = 200
+NAME_MAX_LENGTH = 150
 SLUG_MAX_LENGTH = 200
 MEASUREMENT_UNIT_MAX_LENGTH = 20
 FILE_NAME = 'shopping_cart.txt'
+MIN_VALUE = 1
+MAX_VALUE = 10000
+EMAIL_LENGTH_FIELD = 254

@@ -11,7 +11,7 @@ from users.serializers import (SetNewPasswordSerializer, SubscribeSerializer,
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    '''_______________________________'''
+    '''Отображение пользователей.'''
 
     queryset = CustomUser.objects.all()
     pagination_class = CustomPagination
@@ -41,61 +41,56 @@ class UserViewSet(viewsets.ModelViewSet):
         )
 
     @action(detail=True,
-            methods=['post', 'delete'],
+            methods=['post'],
             permission_classes=[IsAuthenticated])
     def subscribe(self, request, pk=None):
         user = request.user
         author = get_object_or_404(CustomUser, id=pk)
+        if user == author:
+            return Response(
+                {'detail': 'Вы не можете подписаться на самого себя.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        # Сохраняем сериализатор с обновленными данными и контекстом.
+        serializer = SubscribeSerializer(
+            data={'user': user.id, 'author': author.id},
+            context={'request': request}
+        )
 
-        if request.method == 'POST':
-            # Проверяем, существует ли уже подписка от пользователя на автора.
-            # Если подписка не существует, создаем новую запись.
-            if SubscribeModel.objects.filter(
-                user=user, author=author
-            ).exists():
-                return Response(
-                    {"message": "Вы уже подписаны на этого автора"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            if user == author:
-                return Response(
-                    {'errors': 'Нельзя подписать на самого себя.'},
-                    status=status.HTTP_400_BAD_REQUEST)
-            # Сохраняем сериализатор с обновленными данными и контекстом.
-            serializer = SubscribeSerializer(
-                data={'user': user.id, 'author': author.id},
-                context={'request': request}
+        if serializer.is_valid():
+            serializer.save(user=user, author=author)
+
+            return Response(
+                serializer.data,
+                status=status.HTTP_201_CREATED
+            )
+        else:
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
             )
 
-            if serializer.is_valid():
-                serializer.save(user=user, author=author)
+    @subscribe.mapping.delete
+    def delete_subscribe(self, request, pk=None):
+        """Удаляем подписку."""
 
-                return Response(
-                    serializer.data,
-                    status=status.HTTP_201_CREATED
-                )
-            else:
-                return Response(
-                    serializer.errors,
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
-        if request.method == 'DELETE':
-            if not SubscribeModel.objects.filter(
-                user=user,
-                author=author
-            ).exists():
-                return Response(
-                    {'errors': 'Такой подписки у вас не было.'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            subscription = get_object_or_404(
-                SubscribeModel,
-                user=user,
-                author=author
+        user = request.user
+        author = get_object_or_404(CustomUser, id=pk)
+        if not SubscribeModel.objects.filter(
+            user=user,
+            author=author
+        ).exists():
+            return Response(
+                {'detail': 'У вас нет такой подписки.'},
+                status=status.HTTP_400_BAD_REQUEST
             )
-            subscription.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+        subscription = get_object_or_404(
+            SubscribeModel,
+            user=user,
+            author=author
+        )
+        subscription.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False,
             methods=['get'],
@@ -104,7 +99,7 @@ class UserViewSet(viewsets.ModelViewSet):
             pagination_class=CustomPagination)
     def subscriptions(self, request):
         user = request.user
-        queryset = SubscribeModel.objects.filter(user=user).order_by('id')
+        queryset = user.subscriber.all().order_by('id')
         page = self.paginate_queryset(queryset)
 
         # Передаем объект запроса в контексте,

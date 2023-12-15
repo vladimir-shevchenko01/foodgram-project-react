@@ -1,13 +1,14 @@
-from django.core.validators import MinValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.db.models import UniqueConstraint
 
 from components.models import IngredientModel, TagModel
-from foodgram.settings import NAME_MAX_LENGTH
+from foodgram.settings import MAX_VALUE, MIN_VALUE, NAME_MAX_LENGTH
 from users.models import CustomUser
 
 
 class RecipeModel(models.Model):
-    '''Модель рецепта.'''
+    """Модель рецепта."""
 
     author = models.ForeignKey(
         CustomUser,
@@ -35,7 +36,10 @@ class RecipeModel(models.Model):
 
     cooking_time = models.IntegerField(
         verbose_name='Время приготовления, мин',
-        validators=[MinValueValidator(1)],
+        validators=[
+            MinValueValidator(MIN_VALUE),
+            MaxValueValidator(MAX_VALUE)
+        ],
     )
     tags = models.ManyToManyField(
         TagModel,
@@ -54,11 +58,12 @@ class RecipeModel(models.Model):
 
 
 class RecipeIngredientModel(models.Model):
-    '''Модель связывающая ингридиенты и рецепты.'''
+    """Модель связывающая ингридиенты и рецепты."""
 
     recipe = models.ForeignKey(
         RecipeModel,
         on_delete=models.CASCADE,
+        related_name='recipe_ingredients',
     )
     ingredient = models.ForeignKey(
         IngredientModel,
@@ -66,24 +71,33 @@ class RecipeIngredientModel(models.Model):
         verbose_name='Ингредиент'
     )
 
-    amount = models.IntegerField(
+    amount = models.PositiveSmallIntegerField(
         verbose_name='Количество',
-        validators=[MinValueValidator(1)]
+        validators=[
+            MinValueValidator(MIN_VALUE),
+            MaxValueValidator(MAX_VALUE)
+        ],
     )
 
     class Meta:
         verbose_name = 'Ингредиент в рецепте'
         verbose_name_plural = 'Ингредиенты в рецептах'
-        unique_together = ['recipe', 'ingredient']
+        constraints = [
+            UniqueConstraint(
+                fields=['recipe', 'ingredient'], name='unique_ingredient'
+            )
+        ]
 
     def __str__(self):
-        return f'Для приготовления {self.recipe} нужно: ' \
-               f'{self.ingredient} {self.amount} ' \
-               f'{self.ingredient.measurement_unit}'
+        return (
+            f'Для приготовления {self.recipe} нужно: '
+            f'{self.ingredient} {self.amount} '
+            f'{self.ingredient.measurement_unit}'
+        )
 
 
 class FavoriteRecipeModel(models.Model):
-    '''Модель для рецептов в избранном.'''
+    """Модель для рецептов в избранном."""
 
     user = models.ForeignKey(
         CustomUser,
@@ -101,14 +115,16 @@ class FavoriteRecipeModel(models.Model):
     class Meta:
         verbose_name = 'Избранный рецепт'
         verbose_name_plural = 'Избранные рецепты'
-        unique_together = ['user', 'recipe']
+        constraints = [
+            UniqueConstraint(fields=['user', 'recipe'], name='unique_favorite')
+        ]
 
     def __str__(self):
         return f'{self.user} добавил в избранное  {self.recipe}'
 
 
 class ShoppingCartModel(models.Model):
-    '''Модель корзины.'''
+    """Модель корзины."""
 
     user = models.ForeignKey(
         CustomUser,
@@ -126,7 +142,9 @@ class ShoppingCartModel(models.Model):
     class Meta:
         verbose_name = 'Корзина с покупками'
         verbose_name_plural = 'Корзины с покупками'
-        unique_together = ['user', 'recipe']
+        constraints = [
+            UniqueConstraint(fields=['user', 'recipe'], name='unique_cart')
+        ]
 
     def __str__(self):
         return f'Рецепт {self.recipe} в списке покупок'

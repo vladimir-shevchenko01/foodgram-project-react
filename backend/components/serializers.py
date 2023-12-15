@@ -1,10 +1,11 @@
 from rest_framework import serializers
 
 from components.models import IngredientModel, TagModel
+from foodgram.settings import MAX_VALUE, MIN_VALUE
 
 
 class IngredientSerializer(serializers.ModelSerializer):
-    '''Сериализатор ингредиента.'''
+    """Сериализатор ингредиента."""
 
     class Meta:
         model = IngredientModel
@@ -12,9 +13,14 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 
 class AddIngredientsSerializer(serializers.ModelSerializer):
-    '''Сериализатор для добавленя ингредиента.'''
-    id = serializers.IntegerField()
-    amount = serializers.IntegerField()
+    """Сериализатор для добавленя ингредиента."""
+    id = serializers.PrimaryKeyRelatedField(
+        queryset=IngredientModel.objects.all(),
+    )
+    amount = serializers.IntegerField(
+        min_value=MIN_VALUE,
+        max_value=MAX_VALUE
+    )
 
     class Meta:
         model = IngredientModel
@@ -22,7 +28,7 @@ class AddIngredientsSerializer(serializers.ModelSerializer):
 
 
 class TagSerializer(serializers.ModelSerializer):
-    '''Сериализатор тэга.'''
+    """Сериализатор тэга."""
 
     class Meta:
         model = TagModel

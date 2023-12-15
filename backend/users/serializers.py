@@ -56,7 +56,7 @@ class SetNewPasswordSerializer(serializers.Serializer):
 
     def validate(self, obj):
         '''Валидация пароля.'''
-        password = obj.get('password')
+        password = obj.get('new_password')
         errors = {}
         try:
             validators.validate_password(password=password, user=obj)
@@ -86,29 +86,34 @@ class SetNewPasswordSerializer(serializers.Serializer):
 
 
 class SubscribeSerializer(serializers.ModelSerializer):
-    email = serializers.SerializerMethodField()
-    id = serializers.SerializerMethodField()
-    username = serializers.SerializerMethodField()
-    first_name = serializers.SerializerMethodField()
-    last_name = serializers.SerializerMethodField()
+    email = serializers.ReadOnlyField(source='author.email')
+    id = serializers.ReadOnlyField(source='author.id')
+    username = serializers.ReadOnlyField(source='author.username')
+    first_name = serializers.ReadOnlyField(source='author.first_name')
+    last_name = serializers.ReadOnlyField(source='author.last_name')
     is_subscribed = serializers.SerializerMethodField()
     recipes = serializers.SerializerMethodField()
-    recipes_count = serializers.SerializerMethodField()
+    recipes_count = serializers.ReadOnlyField(source='author.recipes.count')
 
-    def get_email(self, obj):
-        return obj.author.email
+    class Meta:
+        model = SubscribeModel
+        fields = (
+            'email', 'id',
+            'username', 'first_name',
+            'last_name', 'is_subscribed',
+            'recipes', 'recipes_count'
+        )
 
-    def get_id(self, obj):
-        return obj.author.id
+    def create(self, validated_data):
+        """Обработка создания подписки."""
 
-    def get_username(self, obj):
-        return obj.author.username
-
-    def get_first_name(self, obj):
-        return obj.author.first_name
-
-    def get_last_name(self, obj):
-        return obj.author.last_name
+        user = validated_data['user']
+        author = validated_data['author']
+        if SubscribeModel.objects.filter(user=user, author=author).exists():
+            raise serializers.ValidationError(
+                'Вы уже подписаны на этого пользователя.'
+            )
+        return SubscribeModel.objects.create(**validated_data)
 
     def get_is_subscribed(self, obj):
         return SubscribeModel.objects.filter(
@@ -122,20 +127,8 @@ class SubscribeSerializer(serializers.ModelSerializer):
         if request and request.GET.get('recipes_limit'):
             limit = request.GET.get('recipes_limit')
             recipe_queryset = recipe_queryset[:int(limit)]
-        recipe_serializer = Recipe_Serializers.ShowFavoriteRecipeSerializer(
-            recipe_queryset, many=True
+        recipe_serializer = (
+            Recipe_Serializers.ShowDataAddToFavoriteOrToCartSerializer(
+                recipe_queryset, many=True)
         )
         return recipe_serializer.data
-
-    def get_recipes_count(self, obj):
-        author = obj.author
-        return len(RecipeModel.objects.filter(author=author))
-
-    class Meta:
-        model = SubscribeModel
-        fields = [
-            'email', 'id',
-            'username', 'first_name',
-            'last_name', 'is_subscribed',
-            'recipes', 'recipes_count'
-        ]

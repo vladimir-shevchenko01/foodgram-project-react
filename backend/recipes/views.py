@@ -1,3 +1,4 @@
+from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -10,18 +11,16 @@ from foodgram.pagination import CustomPagination
 from foodgram.permissions import IsAuthorOrReadOnly
 from foodgram.settings import FILE_NAME
 from recipes.filters import RecipeFilter
-from recipes.models import (FavoriteRecipeModel, RecipeIngredientModel,
-                            RecipeModel, ShoppingCartModel)
+from recipes.models import FavoriteRecipeModel, RecipeModel, ShoppingCartModel
 from recipes.serializers import (FavoriteRecipeSerializer,
                                  RecipeFullDataSerializer,
                                  RecipeShortDataSerializer,
                                  ShoppingCartSerializer,
-                                 ShowFavoriteRecipeSerializer,
-                                 ShowRecipeInCartSerializer)
+                                 ShowDataAddToFavoriteOrToCartSerializer)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
-    '''Отображение рецептов.'''
+    """Отображение рецептов."""
 
     queryset = RecipeModel.objects.all()
     permission_classes = [IsAuthorOrReadOnly]
@@ -35,83 +34,83 @@ class RecipeViewSet(viewsets.ModelViewSet):
         else:
             return RecipeFullDataSerializer
 
-    def perform_destroy(self, instance):
-        instance.delete()
-
-    @action(detail=True,
-            methods=['post', 'delete'],
-            url_path='favorite',
-            permission_classes=[IsAuthenticated])
-    def favorite(self, request, pk=None):
+    def _handle_favorite_shopping_cart(
+        self, request, pk, model, serializer_class, show_serializer
+    ):
         user = request.user
 
+        # Обработка POST-запроса.
         if request.method == 'POST':
-            # Если такого рецепта нет, возвращаем ошибку.
+            # Проверяем существует ли такой рецепт в базе.
             if not RecipeModel.objects.filter(pk=pk).exists():
                 return Response(
-                    {'details': 'Такого рецепта не нет в базе данных.'},
+                    {'details': (
+                        'Такого рецепта не существует.'
+                    )},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            # Если пользователь не авторизован, возвращаем ошибку.
-            if not request.user.is_authenticated:
-                return Response(
-                    {'details': 'Вы не авторизованы.'},
-                    status=status.HTTP_401_UNAUTHORIZED,
-                )
-
             recipe = get_object_or_404(RecipeModel, pk=pk)
-
-            # Проверяем находится ли данный рецепт в избранном.
-            # Если рецепта нет, создаем новую запись.
-            if FavoriteRecipeModel.objects.filter(
-                user=user, recipe=recipe
-            ).exists():
+            # Проверяем, находится ли рецепт уже в
+            # избранном или корзине пользователя.
+            if model.objects.filter(user=user, recipe=recipe).exists():
                 return Response(
-                    {'details': 'Этот рецепт уже есть в вашем избранном.'},
+                    {'details': (
+                        f'Этот рецепт уже есть у вас в {model.__name__}.'
+                    )},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            # Сохраняем сериализатор с обновленными данными.
-            serializer = FavoriteRecipeSerializer(
+            # Добавляем рецепт в избранное или корзину пользователя.
+            serializer = serializer_class(
                 data={'user': user.id, 'recipe': recipe.id}
             )
             if serializer.is_valid():
                 serializer.save()
-                favorite_recipe_serializer = ShowFavoriteRecipeSerializer(
-                    recipe
-                )
+                show_response_serializer = show_serializer(recipe)
                 return Response(
-                    favorite_recipe_serializer.data,
+                    show_response_serializer.data,
                     status=status.HTTP_201_CREATED
                 )
-
             else:
                 return Response(
                     serializer.errors,
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-        if request.method == 'DELETE':
+        # Обработка DELETE-запроса.
+        elif request.method == 'DELETE':
             recipe = get_object_or_404(RecipeModel, pk=pk)
-            if not FavoriteRecipeModel.objects.filter(
-                user=user,
-                recipe=recipe
-            ).exists():
+            # Проверяем, находится ли рецепт в
+            # избранном или корзине пользователя.
+            if not model.objects.filter(user=user, recipe=recipe).exists():
                 return Response(
-                    {'errors': 'Такой рецепта у вас не было.'},
-                    status=status.HTTP_400_BAD_REQUEST
+                    {'details': f'Такого рецепта не было в {model.__name__}.'},
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
-            # Ищем рецепт в избранном и удаляем его.
-            favorite_recipes = get_object_or_404(
-                FavoriteRecipeModel,
-                user=user,
-                recipe=recipe
-            )
-            favorite_recipes.delete()
+
+            # Удаляем рецепт из избранного или корзины пользователя.
+            cart = get_object_or_404(model, user=user, recipe=recipe)
+            cart.delete()
             return Response(
-                {'details': 'Рецепт удалён из избранного избраное'},
+                {'details': f'Рецепт удалён из {model.__name__}'},
                 status=status.HTTP_204_NO_CONTENT
             )
+
+    @action(
+        detail=True,
+        methods=['post', 'delete'],
+        url_path='favorite',
+        permission_classes=[IsAuthenticated]
+    )
+    def favorite(self, request, pk=None):
+
+        return self._handle_favorite_shopping_cart(
+            request,
+            pk,
+            FavoriteRecipeModel,
+            FavoriteRecipeSerializer,
+            ShowDataAddToFavoriteOrToCartSerializer,
+        )
 
     @action(
         detail=True,
@@ -119,80 +118,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated]
     )
     def shopping_cart(self, request, pk=None):
-        user = request.user
-
-        if request.method == 'POST':
-
-            # Если такого рецепта нет, возвращаем ошибку.
-            if not RecipeModel.objects.filter(pk=pk).exists():
-                return Response(
-                    {'details': 'Такого рецепта не нет в базе данных.'},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-            # Если пользователь не авторизован, возвращаем ошибку.
-            if not request.user.is_authenticated:
-                return Response(
-                    {'details': 'Учетные данные не были предоставлены.'},
-                    status=status.HTTP_401_UNAUTHORIZED,
-                )
-
-            recipe = get_object_or_404(RecipeModel, pk=pk)
-
-            # Проверяем, находится ли рецепт уже в корзине пользователя
-            if ShoppingCartModel.objects.filter(
-                user=user, recipe=recipe
-            ).exists():
-                return Response(
-                    {'details': 'Этот рецепт уже есть в вашей корзине.'},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-            # Добавляем рецепт в корзину пользователя
-            serializer = ShoppingCartSerializer(
-                data={'user': user.id, 'recipe': recipe.id}
-            )
-
-            if serializer.is_valid():
-                serializer.save()
-                cart_serializer = ShowRecipeInCartSerializer(recipe)
-                return Response(
-                    cart_serializer.data,
-                    status=status.HTTP_201_CREATED
-                )
-            else:
-                return Response(
-                    serializer.errors,
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
-        if request.method == 'DELETE':
-            recipe = get_object_or_404(RecipeModel, pk=pk)
-            # Если пользователь не авторизован, возвращаем ошибку.
-            if not request.user.is_authenticated:
-                return Response(
-                    {'details': 'Вы не авторизованы.'},
-                    status=status.HTTP_401_UNAUTHORIZED,
-                )
-            # Проверяем, находится ли рецепт в корзине пользователя
-            if not ShoppingCartModel.objects.filter(
-                user=user, recipe=recipe
-            ).exists():
-                return Response(
-                    {'details': 'Такого рецепта нет в вашей корзине.'},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-            # Удаляем рецепт из корзины пользователя
-            shopping_cart_item = ShoppingCartModel.objects.get(
-                user=user, recipe=recipe
-            )
-            shopping_cart_item.delete()
-
-            return Response(
-                {'details': 'Рецепт удалён из корзины покупок'},
-                status=status.HTTP_204_NO_CONTENT
-            )
+        # self._validate_recipe_and_user(request, pk)
+        return self._handle_favorite_shopping_cart(
+            request,
+            pk,
+            ShoppingCartModel,
+            ShoppingCartSerializer,
+            ShowDataAddToFavoriteOrToCartSerializer,
+        )
 
     @action(
         detail=False,
@@ -205,27 +138,35 @@ class RecipeViewSet(viewsets.ModelViewSet):
         user = request.user
         shopping_list = ShoppingCartModel.objects.filter(user=user)
 
+        # Получаем информацию о корзине пользователя с суммарными данными.
+        shopping_list = (
+            user.cart_of_user.all().values(
+                'recipe__ingredients__name',
+                'recipe__ingredients__measurement_unit',
+            )
+            .annotate(total_amount=Sum('recipe__recipe_ingredients__amount'))
+        )
+
         header = 'Список покупок:\n_______________\n\n'
         shopping_list_content = [header]
         ingredients_summary = {}
 
-        for cart_item in shopping_list:
+        for ingredient in shopping_list:
+            name = ingredient['recipe__ingredients__name']
+            measurement_unit = ingredient[
+                'recipe__ingredients__measurement_unit'
+            ]
+            ingredient_name = (
+                f'{name}, {measurement_unit}.:  '
+            )
+            ingredient_amount = ingredient['total_amount']
 
-            recipe = cart_item.recipe
-            ingredients = RecipeIngredientModel.objects.filter(recipe=recipe)
-
-            for ingredient in ingredients:
-                ingredient_name = f'{ingredient.ingredient.name}, ' \
-                                  f'{ingredient.ingredient.measurement_unit}' \
-                                  f'.:  '
-                ingredient_amount = ingredient.amount
-
-                # Добавление или обновление данных в словаре.
-                if ingredient_name in ingredients_summary:
-                    ingredients_summary[ingredient_name] += ingredient_amount
-                else:
-                    ingredients_summary[ingredient_name] = ingredient_amount
-                print(ingredients_summary)
+            # Добавление или обновление данных в словаре.
+            if ingredient_name in ingredients_summary:
+                ingredients_summary[ingredient_name] += ingredient_amount
+            else:
+                ingredients_summary[ingredient_name] = ingredient_amount
+            print(ingredients_summary)
         for key, value in ingredients_summary.items():
             shopping_list_content.append(f'{key}{value}\n')
 

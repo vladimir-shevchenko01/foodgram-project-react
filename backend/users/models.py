@@ -1,23 +1,26 @@
 from django.contrib.auth.models import AbstractUser
+from django.core.exceptions import ValidationError
 from django.db import models
+
+from foodgram.settings import EMAIL_LENGTH_FIELD, NAME_MAX_LENGTH
 
 
 class CustomUser(AbstractUser):
-    '''Кастомная модель пользователя.'''
+    """Кастомная модель пользователя."""
 
     email = models.EmailField(
-        max_length=254,
+        max_length=EMAIL_LENGTH_FIELD,
         verbose_name='email',
         unique=True,
     )
 
     first_name = models.CharField(
-        max_length=150,
+        max_length=NAME_MAX_LENGTH,
         verbose_name='Имя',
     )
 
     last_name = models.CharField(
-        max_length=150,
+        max_length=NAME_MAX_LENGTH,
         verbose_name='Фамилия',
     )
 
@@ -34,7 +37,7 @@ class CustomUser(AbstractUser):
 
 
 class SubscribeModel(models.Model):
-    '''Модель подписки.'''
+    """Модель подписки."""
 
     user = models.ForeignKey(
         CustomUser,
@@ -58,6 +61,14 @@ class SubscribeModel(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'author'],
-                name='unique user author subscription'
+                name='unique_user_author_subscription'
             )
         ]
+
+    def clean(self):
+        # Проверяем, чтобы пользователь не
+        # смог подписаться на самого себя.
+        if self.user == self.author:
+            raise ValidationError(
+                'Пользователь не может подписаться на самого себя.'
+            )
