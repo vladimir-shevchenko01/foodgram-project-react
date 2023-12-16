@@ -1,14 +1,12 @@
 from django_filters.rest_framework import (BooleanFilter, FilterSet,
-                                           ModelChoiceFilter,
                                            ModelMultipleChoiceFilter)
 
 from components.models import TagModel
 from recipes.models import RecipeModel
-from users.models import CustomUser
 
 
 class RecipeFilter(FilterSet):
-    '''Правила фильтрации.'''
+    """Правила фильтрации."""
     is_favorited = BooleanFilter(
         field_name='favorite_recipes',
         method='filter_is_favorited',
@@ -19,8 +17,6 @@ class RecipeFilter(FilterSet):
         method='filter_is_in_shopping_cart',
         label='В корзине'
     )
-    author = ModelChoiceFilter(
-        queryset=CustomUser.objects.all())
     tags = ModelMultipleChoiceFilter(
         field_name='tags__slug',
         to_field_name='slug',
@@ -29,16 +25,21 @@ class RecipeFilter(FilterSet):
 
     class Meta:
         model = RecipeModel
-        fields = ['is_favorited', 'is_in_shopping_cart', 'author', 'tags', ]
+        fields = ('is_favorited', 'is_in_shopping_cart', 'author', 'tags', )
+
+    def filter_boolean_field(self, queryset, name, value, field_name):
+        user = self.request.user
+        if user.is_authenticated and value:
+            filter_params = {f'{field_name}__user': user}
+            return queryset.filter(**filter_params)
+        return queryset
 
     def filter_is_favorited(self, queryset, name, value):
-        user = self.request.user
-        if user.is_authenticated and value:
-            return queryset.filter(favorites__user=user)
-        return queryset
+        return self.filter_boolean_field(
+            queryset, name, value, 'favorites'
+        )
 
     def filter_is_in_shopping_cart(self, queryset, name, value):
-        user = self.request.user
-        if user.is_authenticated and value:
-            return queryset.filter(recipe_in_cart__user=user)
-        return queryset
+        return self.filter_boolean_field(
+            queryset, name, value, 'recipe_in_cart'
+        )

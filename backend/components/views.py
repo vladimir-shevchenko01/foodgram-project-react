@@ -9,7 +9,7 @@ from components.serializers import IngredientSerializer, TagSerializer
 class TagViewSet(mixins.ListModelMixin,
                  mixins.RetrieveModelMixin,
                  viewsets.GenericViewSet):
-    '''Отображение тегов.'''
+    """Отображение тегов."""
 
     queryset = TagModel.objects.all()
     permission_classes = (AllowAny, )
@@ -20,7 +20,7 @@ class TagViewSet(mixins.ListModelMixin,
 class IngredientViewSet(mixins.ListModelMixin,
                         mixins.RetrieveModelMixin,
                         viewsets.GenericViewSet):
-    '''Отображение ингредиентов.'''
+    """Отображение ингредиентов."""
 
     queryset = IngredientModel.objects.all()
     serializer_class = IngredientSerializer

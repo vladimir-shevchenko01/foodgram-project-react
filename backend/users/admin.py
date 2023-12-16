@@ -19,15 +19,15 @@ class UserAdmin(UserAdmin):
     exclude = ('Token', 'Groups', )
     empty_value_display = '-пусто-'
 
+    @admin.display(description='Число подписчиков')
     def get_subscribers_count(self, obj):
         # Получаем число подписчиков.
         return obj.subscribing.count()
-    get_subscribers_count.short_description = 'Число подписчиков'
 
+    @admin.display(description='Число рецептов')
     def get_recipes_count(self, obj):
         # Получаем число рецептов.
         return obj.recipes.count()
-    get_recipes_count.short_description = 'Число рецептов'
 
     def save_model(self, request, obj, form, change):
         # Для изменения пароля используйте set_password.

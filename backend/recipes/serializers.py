@@ -1,7 +1,6 @@
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 
-from components.models import IngredientModel
 from components.serializers import AddIngredientsSerializer, TagSerializer
 from recipes.models import (FavoriteRecipeModel, RecipeIngredientModel,
                             RecipeModel, ShoppingCartModel)
@@ -26,7 +25,6 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RecipeIngredientModel
-        # fields = ('id', 'name', 'measurement_unit')
         exclude = ('ingredient', 'recipe')
 
 
@@ -88,27 +86,21 @@ class RecipeShortDataSerializer(serializers.ModelSerializer):
     def _create_ingredients_for_recipe(self, recipe, ingredients):
         """Создаем объект RecipeIngredientModel."""
 
-        recipe_ingredients = []
-
         # Записываем ингредиенты в список объектов RecipeIngredientModel
-        for ingredient_data in ingredients:
-            id = ingredient_data['id'].id
-            amount = ingredient_data['amount']
-
-            recipe_ingredient = RecipeIngredientModel(
-                recipe=recipe,
-                ingredient_id=id,
-                amount=amount
-            )
-            recipe_ingredients.append(recipe_ingredient)
         # Сортируем ингредиенты по алфавиту
-        sorted_recipe_ingredients = sorted(
-            recipe_ingredients,
+        recipe_ingredients = sorted([
+            RecipeIngredientModel(
+                recipe=recipe,
+                ingredient_id=ingredient_data['id'].id,
+                amount=ingredient_data['amount']
+            )
+            for ingredient_data in ingredients
+        ],
             key=lambda x: x.ingredient.name
         )
 
         # Используем bulk_create для добавления всех объектов в базу данных.
-        RecipeIngredientModel.objects.bulk_create(sorted_recipe_ingredients)
+        RecipeIngredientModel.objects.bulk_create(recipe_ingredients)
 
     def validate(self, obj):
         """Проверка обязательных полей."""
@@ -132,13 +124,6 @@ class RecipeShortDataSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 'Ингредиенты не могут повторяться.'
             )
-
-        # Проверка на наличие ингредиента в БД.
-        for ing in ingredients:
-            if not IngredientModel.objects.filter(pk=ing.id).exists():
-                raise serializers.ValidationError(
-                    'Такого ингредиента нет в базе данных.'
-                )
 
         return obj
 

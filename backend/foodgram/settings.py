@@ -70,6 +70,12 @@ DATABASES = {
     }
 }
 
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'collected_static'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = '/media'
+
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.sqlite3',
@@ -85,11 +91,6 @@ DATABASES = {
 # MEDIA_URL = '/media/'
 # MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'collected_static'
-
-MEDIA_URL = '/media/'
-MEDIA_ROOT = '/media'
 
 AUTH_PASSWORD_VALIDATORS = [
     {

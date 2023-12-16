@@ -32,17 +32,18 @@ class RecipeAdmin(admin.ModelAdmin):
         'name', 'text', 'author'
     )
     list_filter = ('name', 'author', 'tags',)
+    search_fields = ('name', 'text', 'author__username',)
     empty_value_display = '-пусто-'
 
+    @admin.display(description='Ингредиенты')
     def display_ingredients(self, obj):
-        return ", ".join(
+        return ', '.join(
             [ingredient.name for ingredient in obj.ingredients.all()]
         )
-    display_ingredients.short_description = 'Ingredients'
 
+    @admin.display(description='Тэги')
     def display_tags(self, obj):
-        return ", ".join([tag.name for tag in obj.tags.all()])
-    display_tags.short_description = 'Tags'
+        return ', '.join([tag.name for tag in obj.tags.all()])
 
 
 @admin.register(RecipeIngredientModel)

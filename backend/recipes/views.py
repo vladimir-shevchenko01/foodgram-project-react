@@ -136,11 +136,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
         '''Реализация эндпоинта download_shopping_list.'''
 
         user = request.user
-        shopping_list = ShoppingCartModel.objects.filter(user=user)
 
         # Получаем информацию о корзине пользователя с суммарными данными.
         shopping_list = (
-            user.cart_of_user.all().values(
+            user.cart_of_user.values(
                 'recipe__ingredients__name',
                 'recipe__ingredients__measurement_unit',
             )
@@ -166,7 +165,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 ingredients_summary[ingredient_name] += ingredient_amount
             else:
                 ingredients_summary[ingredient_name] = ingredient_amount
-            print(ingredients_summary)
         for key, value in ingredients_summary.items():
             shopping_list_content.append(f'{key}{value}\n')
 

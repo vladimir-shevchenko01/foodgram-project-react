@@ -6,7 +6,7 @@ from foodgram.settings import (MEASUREMENT_UNIT_MAX_LENGTH, NAME_MAX_LENGTH,
 
 
 class IngredientModel(models.Model):
-    '''Модель ингредиента.'''
+    """Модель ингредиента."""
 
     name = models.CharField(
         max_length=NAME_MAX_LENGTH,
@@ -32,7 +32,7 @@ class IngredientModel(models.Model):
 
 
 class TagModel(models.Model):
-    '''Модель тэга.'''
+    """Модель тэга."""
 
     name = models.CharField(
         verbose_name="Наименование тэга",

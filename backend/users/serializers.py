@@ -1,5 +1,6 @@
 import django.contrib.auth.password_validation as validators
 from django.core import exceptions
+from django.core.exceptions import ValidationError
 from rest_framework import serializers
 
 import recipes.serializers as Recipe_Serializers
@@ -8,7 +9,7 @@ from users.models import CustomUser, SubscribeModel
 
 
 class UserSerializer(serializers.ModelSerializer):
-    '''Пользовательский сериали'''
+    """Пользовательский сериализатор."""
 
     is_subscribed = serializers.SerializerMethodField()
 
@@ -22,16 +23,23 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = [
+        fields = (
             'email', 'id', 'username',
             'first_name', 'last_name', 'is_subscribed'
-        ]
+        )
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
-    '''Сериализатор для создания пользователя.'''
+    """Сериализатор для создания пользователя."""
 
     password = serializers.CharField(write_only=True)
+
+    def validate_username(self, value):
+        if value.lower() == 'me':
+            raise ValidationError(
+                'Username "me" запрещено использовать.'
+            )
+        return value
 
     def create(self, validated_data):
         password = validated_data.pop('password', None)
@@ -43,19 +51,21 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = [
+        fields = (
             'email', 'id', 'username',
             'first_name', 'last_name', 'password',
-        ]
+        )
 
 
 class SetNewPasswordSerializer(serializers.Serializer):
-    '''Обновить пароль.'''
+    """Обновить пароль."""
+
     current_password = serializers.CharField()
     new_password = serializers.CharField()
 
     def validate(self, obj):
-        '''Валидация пароля.'''
+        """Валидация пароля."""
+
         password = obj.get('new_password')
         errors = {}
         try:
@@ -67,7 +77,8 @@ class SetNewPasswordSerializer(serializers.Serializer):
         return super(SetNewPasswordSerializer, self).validate(obj)
 
     def update(self, instance, validated_data):
-        '''Обновление пароля.'''
+        """Обновление пароля."""
+
         current_password = validated_data.get('current_password')
         new_password = validated_data.get('new_password')
         # Проверяем введенные данные.
@@ -86,6 +97,8 @@ class SetNewPasswordSerializer(serializers.Serializer):
 
 
 class SubscribeSerializer(serializers.ModelSerializer):
+    """Сериализатор подписки."""
+
     email = serializers.ReadOnlyField(source='author.email')
     id = serializers.ReadOnlyField(source='author.id')
     username = serializers.ReadOnlyField(source='author.username')

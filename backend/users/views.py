@@ -11,7 +11,7 @@ from users.serializers import (SetNewPasswordSerializer, SubscribeSerializer,
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    '''Отображение пользователей.'''
+    """Отображение пользователей."""
 
     queryset = CustomUser.objects.all()
     pagination_class = CustomPagination
@@ -25,6 +25,7 @@ class UserViewSet(viewsets.ModelViewSet):
             methods=['get'],
             permission_classes=(IsAuthenticated,))
     def me(self, request):
+        """Запрос своей страницы."""
         serializer = UserSerializer(request.user)
         return Response(serializer.data,
                         status=status.HTTP_200_OK)
@@ -32,6 +33,8 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'],
             permission_classes=(IsAuthenticated,))
     def set_password(self, request):
+        """Меняем пароль."""
+
         serializer = SetNewPasswordSerializer(request.user, data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
@@ -44,6 +47,8 @@ class UserViewSet(viewsets.ModelViewSet):
             methods=['post'],
             permission_classes=[IsAuthenticated])
     def subscribe(self, request, pk=None):
+        """Создаем подписку."""
+
         user = request.user
         author = get_object_or_404(CustomUser, id=pk)
         if user == author:
